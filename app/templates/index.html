@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Predictor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<h2>📊 Real-Time Stock Chart</h2>
+
+<input type="text" id="ticker" placeholder="Enter Stock (AAPL)">
+<button onclick="loadChart()">Load Chart</button>
+
+<canvas id="stockChart" width="600" height="300"></canvas>
+
+<hr>
+
+<h2>🤖 Prediction</h2>
+<form action="/predict" method="post">
+    <input type="text" name="d1" placeholder="Day 1">
+    <input type="text" name="d2" placeholder="Day 2">
+    <input type="text" name="d3" placeholder="Day 3">
+    <input type="text" name="d4" placeholder="Day 4">
+    <input type="text" name="d5" placeholder="Day 5">
+    <button type="submit">Predict</button>
+</form>
+
+{% if prediction %}
+<h3>Predicted Price: {{ prediction }}</h3>
+{% endif %}
+
+<script>
+let chart;
+
+async function loadChart() {
+    const ticker = document.getElementById("ticker").value || "AAPL";
+
+    const res = await fetch(`/stock-data?ticker=${ticker}`);
+    const data = await res.json();
+
+    const ctx = document.getElementById("stockChart").getContext("2d");
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: data.dates,
+            datasets: [{
+                label: ticker + " Price",
+                data: data.prices,
+                borderWidth: 2
+            }]
+        }
+    });
+}
+
+loadChart();
+setInterval(loadChart, 10000);
+</script>
+
+</body>
+</html>
